@@ -5,6 +5,8 @@ const userSchema = new Schema({
   password: String,
   coin: Number,
   pokemons: [{}],
+  pokefight: [{}],
+  isFigthing: Boolean,
   createdAt: {
     type: Date,
     default: Date.now,

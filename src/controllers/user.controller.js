@@ -10,6 +10,7 @@ const getUser = async (req, res) => {
       username: user.login,
       coin: user.coin,
       pokemons: user.pokemons,
+      pokefight: user.pokefight,
     });
   } catch (error) {
     res.status(500).send("An error has occured");
@@ -49,9 +50,7 @@ const patchPokemons = async (req, res) => {
       .get("https://pokeapi.co/api/v2/pokemon/?offset=" + id + "&limit=1")
       .then((res) => res.data)
       .then((data) => {
-        console.log("data " + JSON.stringify(data));
         idp = data.results[0].url.split("/")[6];
-        console.log("bloquer01");
         namep = data.results[0].name;
         return { data, idp, namep };
       })
@@ -60,7 +59,6 @@ const patchPokemons = async (req, res) => {
           .get(data.results[0].url)
           .then((res) => res.data)
           .then((data) => {
-            console.log("bloquer1");
             if (data.types[1]) {
               newPokemon = {
                 id: idp,
@@ -89,14 +87,13 @@ const patchPokemons = async (req, res) => {
             }
           })
           .then(async () => {
-            console.log("bloquer2");
             user.pokemons.push(newPokemon);
 
             await user.save();
 
-            console.log(user);
             res.status(200).json({
               pokemons: user.pokemons,
+              newPokemon: newPokemon,
             });
           })
       )
@@ -109,8 +106,50 @@ const patchPokemons = async (req, res) => {
   }
 };
 
+const addPokefight = async (req, res) => {
+  try {
+    const user = req.user;
+
+    const pokefight = req.body.pokefight;
+
+    user.pokefight.push(pokefight);
+
+    await user.save();
+
+    res.status(200).json({
+      pokefight: user.pokefight,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("An error has occured");
+  }
+};
+
+const rmPokefight = async (req, res) => {
+  try {
+    const user = req.user;
+
+    const pokefight = req.body.pokefight;
+
+    const i = user.pokefight.findIndex((pokm) => pokm.id === pokefight.id);
+
+    user.pokefight.splice(i, 1);
+
+    await user.save();
+
+    res.status(200).json({
+      pokefight: user.pokefight,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("An error has occured");
+  }
+};
+
 module.exports = {
   getUser,
   patchCoin,
   patchPokemons,
+  addPokefight,
+  rmPokefight,
 };
